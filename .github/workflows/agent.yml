@@ -2,8 +2,8 @@ name: Daily AI Tech Agent
 
 on:
   schedule:
-    - cron: '0 8 * * *'
-      timezone: 'America/New_York'
+    # Temporary test: 01:22 UTC = 8:22 PM EST tonight
+    - cron: '22 1 * * *'
   workflow_dispatch:
 
 jobs:
@@ -11,12 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.11'
+          python-version: '3.13'
 
       - name: Run AI Agent
         env:
