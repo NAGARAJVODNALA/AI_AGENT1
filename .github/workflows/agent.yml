@@ -1,10 +1,10 @@
 name: Daily AI Tech Agent
 
 on:
-  schedule:
-    # Temporary test: 01:22 UTC = 8:22 PM EST tonight
-    - cron: '22 1 * * *'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   run-agent:
@@ -23,3 +23,11 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python agent.py
+
+      - name: Save Report to Repo
+        run: |
+          git config user.name "AI-Agent-Bot"
+          git config user.email "actions@github.com"
+          git add reports/
+          git diff --staged --quiet || git commit -m "Add daily briefing report"
+          git push
