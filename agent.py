@@ -2,8 +2,10 @@ import os
 import json
 import time
 import socket
+import pathlib
 import urllib.request
 import urllib.error
+from datetime import datetime, timezone, timedelta
 
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"].strip()
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK_URL", "").strip()
@@ -22,7 +24,6 @@ def fetch_top_news(limit=8):
     return "\n".join(stories)
 
 def ask_gemini(prompt):
-    # Ordered from highest free-tier quota & newest stable models first
     models = [
         "gemini-3.5-flash-lite",
         "gemini-3.8-flash",
@@ -64,6 +65,26 @@ def ask_gemini(prompt):
 def deliver_output(message):
     print("\n=== AI_AGENT1 BRIEFING ===\n")
     print(message)
+
+    # Timestamp in US Eastern Time (EST, UTC-5)
+    est = timezone(timedelta(hours=-5))
+    now_est = datetime.now(est)
+    today_str = now_est.strftime("%Y-%m-%d")
+    time_str = now_est.strftime("%I:%M %p EST")
+
+    # Save permanently to reports/YYYY-MM-DD.md
+    report_dir = pathlib.Path("reports")
+    report_dir.mkdir(exist_ok=True)
+    report_file = report_dir / f"{today_str}.md"
+
+    header = f"# Daily AI Tech Briefing ({today_str})\n\n" if not report_file.exists() else "\n---\n\n"
+    entry = f"{header}## Run at {time_str}\n\n{message}\n"
+
+    with report_file.open("a", encoding="utf-8") as f:
+        f.write(entry)
+    print(f"Saved report to {report_file}")
+
+    # Optional Discord notification
     if DISCORD_WEBHOOK:
         req = urllib.request.Request(
             DISCORD_WEBHOOK,
